@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-file_path = '/content/input.xlsx'  # Replace with the actual file path
+file_path = '/content/input.xlsx'  
 df = pd.read_excel(file_path)
 
 df.head()
