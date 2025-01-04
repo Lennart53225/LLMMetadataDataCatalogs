@@ -1,0 +1,29 @@
+import pandas as pd
+import re
+
+file_path = '/content/input.xlsx'  # Replace with the actual file path
+df = pd.read_excel(file_path)
+
+df.head()
+
+def fix_array_format(cell):
+    if isinstance(cell, str):
+        cell = re.sub(r',\s*', ',', cell)
+        matches = re.findall(r'\b\d+\b|[a-zA-Z0-9_]+', cell)
+
+        corrected_list = ['"{}"'.format(match) if not match.startswith('"') else match for match in matches]
+
+        return "[{}]".format(", ".join(corrected_list))
+
+    return cell
+
+
+df['LLM'] = df['LLM'].apply(fix_array_format)
+
+df.head()
+
+
+corrected_file_path = '/content/cleaned.xlsx' 
+df.to_excel(corrected_file_path, index=False)
+
+print("File saved successfully at:", corrected_file_path)
