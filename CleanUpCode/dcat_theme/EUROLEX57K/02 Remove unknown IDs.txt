@@ -1,0 +1,76 @@
+import pandas as pd
+import ast
+import json  # Import json module to format lists as JSON strings
+
+# Load the first Excel file (containing columns "A" and "B")
+file1 = '/content/cleaned.xlsx'
+df1 = pd.read_excel(file1)
+
+# Load the second Excel file (containing the correct IDs and labels)
+file2 = '/content/label.xlsx'
+df2 = pd.read_excel(file2)
+
+
+df2.columns = df2.columns.str.strip()  # Removes any leading or trailing spaces
+print("Column names in label.xlsx:", df2.columns)
+
+
+id_column = 'ID'     # Adjust if necessary
+label_column = 'Label'  # Adjust if necessary
+
+
+df2[id_column] = df2[id_column].astype(str).str.strip()
+
+
+id_to_label = dict(zip(df2[id_column], df2[label_column]))
+
+
+def map_ids_to_labels(id_array):
+    valid_ids = []
+    unknown_ids = []
+    
+    for id_ in id_array:
+        id_clean = str(id_).strip()  # Clean up extra spaces or formatting issues
+        if id_clean in id_to_label:
+            valid_ids.append(id_clean)  # Keep valid IDs
+        else:
+            unknown_ids.append(id_clean)  # Track unknown IDs
+
+    return valid_ids, unknown_ids
+
+
+df1['Original B'] = df1['B']
+
+def apply_mapping_and_check(row):
+    # Safely evaluate the cell, assuming it's a list of strings
+    try:
+        ids_b = ast.literal_eval(row['B'])  
+        if not isinstance(ids_b, list):
+            raise ValueError
+    except (ValueError, SyntaxError):
+        print(f"Row {row.name}: Could not evaluate B column as a list. Skipping row.")
+        return pd.Series([row['A'], ''])  
+
+    ids_b_cleaned, unknown_b = map_ids_to_labels(ids_b)
+
+    if unknown_b:
+        print(f"Row {row.name} has unknown label IDs: {unknown_b}")
+
+    cleaned_b_as_string = json.dumps(ids_b_cleaned)
+
+    return pd.Series([row['A'], cleaned_b_as_string])
+
+
+df1[['Labels A', 'Cleaned B']] = df1.apply(apply_mapping_and_check, axis=1)
+
+df1['B'] = df1['Cleaned B']
+
+
+df1 = df1.drop(columns=['Original B', 'Labels A', 'Cleaned B'])
+
+
+output_file = '/content/output.xlsx'
+df1.to_excel(output_file, index=False)
+
+print(f"Unknown IDs in column B were removed. Cleaned data saved to {output_file}")
+
