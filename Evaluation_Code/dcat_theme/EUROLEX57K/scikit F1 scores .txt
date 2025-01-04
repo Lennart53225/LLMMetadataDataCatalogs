@@ -3,7 +3,7 @@ import numpy as np
 import ast
 from sklearn.metrics import precision_score, recall_score, f1_score
 
-file_path = '/content/Final_Results_Gemini_15_Pro_few_shot.xlsx'
+file_path = '/content/input.xlsx'
 data = pd.read_excel(file_path)
 
 def to_list(ids):
@@ -12,8 +12,8 @@ def to_list(ids):
     except (ValueError, SyntaxError):
         return []
 
-data['Human IDs'] = data['Human IDs'].apply(to_list)
-data['LLM IDs Cleaned'] = data['LLM IDs Cleaned'].apply(to_list)
+data['Human'] = data['Human'].apply(to_list)
+data['LLM'] = data['LLM'].apply(to_list)
 
 def binarize_labels(human_ids, llm_ids_cleaned, all_ids):
     human_set = set(human_ids)  # Convert to set
@@ -22,13 +22,13 @@ def binarize_labels(human_ids, llm_ids_cleaned, all_ids):
     llm_vector = [1 if label in llm_set else 0 for label in all_ids]
     return human_vector, llm_vector
 
-all_ids = sorted(list(set().union(*data['Human IDs'], *data['LLM IDs Cleaned'])))
+all_ids = sorted(list(set().union(*data['Human'], *data['LLM'])))
 
 human_vectors = []
 llm_vectors = []
 
 for _, row in data.iterrows():
-    human_vector, llm_vector = binarize_labels(row['Human IDs'], row['LLM IDs Cleaned'], all_ids)
+    human_vector, llm_vector = binarize_labels(row['Human'], row['LLM'], all_ids)
     # Ensure vectors are not empty before appending
     if human_vector and llm_vector:
         human_vectors.append(human_vector)
