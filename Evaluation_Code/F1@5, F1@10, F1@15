@@ -50,7 +50,7 @@ def evaluate_f1_at_k(human_keyphrases, llm_keyphrases, k):
     return f1_at_k
 
 
-df = pd.read_excel('/content/Final results gemini 1.5 flash few shot cleaned.xlsx')
+df = pd.read_excel('/content/input.xlsx')
 
 
 f1_at_5_list = []
