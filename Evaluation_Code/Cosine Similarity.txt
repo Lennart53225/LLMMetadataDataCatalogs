@@ -50,7 +50,7 @@ def get_embedding(text):
                 {"text": limited_text}
             ]
         },
-        "outputDimensionality": 10  
+        "outputDimensionality": 768  
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(data))
